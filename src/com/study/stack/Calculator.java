@@ -4,7 +4,7 @@ public class Calculator {
 
     public static void main(String[] args) {
         //中缀表达式
-        String expression="7*2*2-5+1-5+3-4"; //18
+        String expression="10-10"; //18
         //创建两个栈，数栈，一个符号栈
         ArrayStack2 numStack = new ArrayStack2(10);
         ArrayStack2 operStack = new ArrayStack2(10);
@@ -15,6 +15,9 @@ public class Calculator {
         int oper = 0;
         int res = 0;
         char ch = ' ';//将每次扫描得到的char保存到ch
+        String keepNum = "";//将每次扫描到char保存到ch
+
+
         //开始while循环扫描expression
         while (true){
             //依次得到expression的每一个字符
@@ -43,8 +46,28 @@ public class Calculator {
                     operStack.push(ch);
                 }
             }else { //如果是数，直接入数栈
-                //
-                numStack.push(ch - 48);
+                //  不处理多位数
+                // numStack.push(ch - 48);
+                //分析思路
+                //1.当处理多位数时，不能发现是一个数就立即入栈，因为它可能时多位数
+                //2.在处理多位数，需要向expression的表达式的index后再看一位，如果是数就进行扫描，如果是符号才入栈
+                //3.因此我们需要定义一个变量字符串，用于拼接
+
+                //处理多位数
+                keepNum+=ch;
+                //如果ch是最后一位，就直接入栈
+                if (index == expression.length() -1){
+                    numStack.push(Integer.parseInt(keepNum));
+                }else {
+                    //判断下一个字符是不是数字，如果是数字，就继续扫描，如果是运算符，则入栈
+                    //注意是看最后一位，不是index++
+                    if (operStack.isOper(expression.substring(index+1,index+2).charAt(0))){
+                        //如果后一位是运算符，则入栈keepNum = "1" 或者 “123”
+                        numStack.push(Integer.parseInt(keepNum));
+                        //keepNum清空
+                        keepNum = "";
+                    }
+                }
             }
             //让index+1 ，判断是否扫描到expression最后
             index++;
@@ -64,7 +87,6 @@ public class Calculator {
             oper = operStack.pop();
             res  = numStack.cal(num1,num2,oper);//计算
             numStack.push(res);//入栈
-
         }
         //将数栈的最后数，pop出来就是结果
         System.out.printf("表达式%s = %d",expression,numStack.pop());
